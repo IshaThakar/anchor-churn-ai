@@ -1,0 +1,40 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Environment variables
+.env
+*.env
+
+# Distribution / build
+build/
+dist/
+*.egg-info/
+*.egg
+
+# IDE & editor files
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Windows system files
+Thumbs.db
+desktop.ini
+
+# macOS system files
+.DS_Store
+
+# Logs
+*.log
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/

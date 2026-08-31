@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anchor | Predictive Intelligence for Customer Retention</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- TOP GLOBAL NAV -->
+  <header class="navbar">
+    <div class="nav-left">
+      <div class="logo-container">
+        <div class="logo-mark">
+          <i data-lucide="anchor"></i>
+        </div>
+        <div class="logo-text">
+          <span class="brand-name">Anchor<span class="brand-dot">.</span></span>
+          <span class="brand-tagline">Predictive Intelligence for Customer Retention</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div class="governance-selector-wrap">
+        <span class="gov-label"><i data-lucide="shield-check"></i> Phased Deployment Matrix:</span>
+        <div class="gov-btn-group">
+          <button class="gov-mode-btn" data-mode="Day 1-30: Heuristic Rules" onclick="setGovernanceMode('Day 1-30: Heuristic Rules')">
+            <span class="mode-phase">Day 1-30</span> Heuristic
+          </button>
+          <button class="gov-mode-btn" data-mode="Day 30-60: V1 ML Shadow Mode" onclick="setGovernanceMode('Day 30-60: V1 ML Shadow Mode')">
+            <span class="mode-phase">Day 30-60</span> Shadow Mode
+          </button>
+          <button class="gov-mode-btn active" data-mode="Day 90+: Full Autonomous" onclick="setGovernanceMode('Day 90+: Full Autonomous')">
+            <span class="mode-phase">Day 90+</span> Autonomous
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="pii-toggle-wrap">
+        <label class="switch">
+          <input type="checkbox" id="pii-toggle" onchange="togglePiiMasking(this.checked)">
+          <span class="slider round"></span>
+        </label>
+        <span class="toggle-label" title="GDPR & CCPA Tokenization Layer">PII Masking</span>
+      </div>
+      <div class="system-status-badge">
+        <span class="pulse-dot"></span>
+        <span>ML Engine Active</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="main-container">
+
+    <!-- KPI OVERVIEW BAR -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Total Monitored ARR</span>
+          <div class="kpi-icon-wrap icon-blue"><i data-lucide="layers"></i></div>
+        </div>
+        <div class="kpi-value" id="kpi-monitored-arr">$1,213,976</div>
+        <div class="kpi-subtitle"><span class="highlight-positive"><i data-lucide="trending-up"></i> 8 Enterprise Accounts</span> across 3 Segments</div>
+      </div>
+
+      <div class="kpi-card warning-card">
+        <div class="kpi-header">
+          <span class="kpi-title">ARR at Risk (Risk &ge; 50)</span>
+          <div class="kpi-icon-wrap icon-amber"><i data-lucide="alert-triangle"></i></div>
+        </div>
+        <div class="kpi-value warning-text" id="kpi-arr-at-risk">$432,388</div>
+        <div class="kpi-subtitle"><span class="badge badge-critical" id="kpi-critical-count">3 Critical</span> requiring instant intervention</div>
+      </div>
+
+      <div class="kpi-card success-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Prevented Churn ARR</span>
+          <div class="kpi-icon-wrap icon-green"><i data-lucide="shield-alert"></i></div>
+        </div>
+        <div class="kpi-value success-text" id="kpi-prevented-arr">$148,500</div>
+        <div class="kpi-subtitle"><span class="highlight-positive">+18.4% Retention Lift</span> vs Reactive Baseline</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Average Churn Propensity</span>
+          <div class="kpi-icon-wrap icon-purple"><i data-lucide="activity"></i></div>
+        </div>
+        <div class="kpi-value" id="kpi-avg-risk">43.8%</div>
+        <div class="kpi-subtitle"><span class="highlight-neutral">Model Precision: 91.4%</span> (SHAP Calibrated)</div>
+      </div>
+    </section>
+
+    <!-- SECTION TABS -->
+    <div class="view-tabs-container">
+      <div class="view-tabs">
+        <button class="tab-btn active" onclick="switchView('matrix')"><i data-lucide="layout-grid"></i> Retention Risk Matrix</button>
+        <button class="tab-btn" onclick="switchView('simulator')"><i data-lucide="sliders"></i> Telemetry Drift Simulator</button>
+        <button class="tab-btn" onclick="switchView('dispatches')"><i data-lucide="send"></i> Omnichannel Dispatch Log</button>
+        <button class="tab-btn" onclick="switchView('roi')"><i data-lucide="calculator"></i> Proof of Value & ROI Model</button>
+      </div>
+      <div class="matrix-search-box">
+        <i data-lucide="search"></i>
+        <input type="text" id="account-search-input" placeholder="Search accounts, CSMs, domains..." onkeyup="filterAccounts()">
+      </div>
+    </div>
+
+    <!-- VIEW 1: RETENTION MATRIX -->
+    <section id="view-matrix" class="view-section active">
+      <!-- Filter Bar -->
+      <div class="filter-toolbar">
+        <div class="filter-group">
+          <span class="filter-label">Customer Segment:</span>
+          <button class="filter-chip active" data-segment="" onclick="setSegmentFilter(this, '')">All</button>
+          <button class="filter-chip" data-segment="Enterprise VIP" onclick="setSegmentFilter(this, 'Enterprise VIP')">Enterprise VIP</button>
+          <button class="filter-chip" data-segment="Mid-Market" onclick="setSegmentFilter(this, 'Mid-Market')">Mid-Market</button>
+          <button class="filter-chip" data-segment="PLG / Self-Serve" onclick="setSegmentFilter(this, 'PLG / Self-Serve')">PLG / Self-Serve</button>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Risk Tier:</span>
+          <button class="filter-chip active" data-risk="" onclick="setRiskFilter(this, '')">All Levels</button>
+          <button class="filter-chip" data-risk="Critical" onclick="setRiskFilter(this, 'Critical')"><span class="dot dot-critical"></span> Critical (&ge;75)</button>
+          <button class="filter-chip" data-risk="High" onclick="setRiskFilter(this, 'High')"><span class="dot dot-high"></span> High (50-74)</button>
+          <button class="filter-chip" data-risk="Medium" onclick="setRiskFilter(this, 'Medium')"><span class="dot dot-medium"></span> Medium</button>
+          <button class="filter-chip" data-risk="Low" onclick="setRiskFilter(this, 'Low')"><span class="dot dot-low"></span> Low (&lt;25)</button>
+        </div>
+      </div>
+
+      <!-- Accounts Table -->
+      <div class="table-container">
+        <table class="anchor-table" id="accounts-table">
+          <thead>
+            <tr>
+              <th>Account & Segment</th>
+              <th>ARR & Renewal</th>
+              <th>Propensity Score</th>
+              <th>Dissatisfaction Driver</th>
+              <th>Est. Time-to-Churn</th>
+              <th>Next-Best-Action (NBA)</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="accounts-table-body">
+            <!-- Dynamic rows populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 2: SIMULATION SANDBOX -->
+    <section id="view-simulator" class="view-section">
+      <div class="sandbox-header">
+        <div class="sandbox-intro">
+          <h2><i data-lucide="flask-conical"></i> Behavioral Decay & Silent Drift Sandbox</h2>
+          <p>Test the platform's multi-dimensional detection engine in real-time. Inject synthetic decay signals (API drops, sponsor departure, billing failures) into any account and observe the immediate re-scoring, SHAP waterfall shifts, and autonomous omnichannel routing.</p>
+        </div>
+        <div class="sandbox-target-selector">
+          <label>Target Account:</label>
+          <select id="sim-account-select" onchange="onSimAccountChange()">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+      </div>
+
+      <div class="sim-grid">
+        <div class="sim-card">
+          <div class="sim-card-header">
+            <i data-lucide="zap-off" class="icon-danger"></i>
+            <h3>Severe API Utilization Drop</h3>
+          </div>
+          <p>Simulates a 70%+ drop in production API telemetry over 30 days. Triggers technical drift detection.</p>
+          <button class="btn btn-outline-danger" onclick="injectDecayScenario('api_drop_70')">
+            <i data-lucide="play"></i> Inject -70% API Decay
+          </button>
+        </div>
+
+        <div class="sim-card">
+          <div class="sim-card-header">
+            <i data-lucide="user-x" class="icon-warning"></i>
+            <h3>Executive Sponsor Departure</h3>
+          </div>
+          <p>Flags key executive buyer/sponsor departure. Evaluates organizational stability and stakeholder drift.</p>
+          <button class="btn btn-outline-warning" onclick="injectDecayScenario('executive_departure')">
+            <i data-lucide="play"></i> Flag Sponsor Departure
+          </button>
+        </div>
+
+        <div class="sim-card">
+          <div class="sim-card-header">
+            <i data-lucide="credit-card" class="icon-warning"></i>
+            <h3>Billing Failure & Downgrade Hit</h3>
+          </div>
+          <p>Simulates 2 consecutive invoice payment failures and navigation to account cancellation/downgrade settings.</p>
+          <button class="btn btn-outline-warning" onclick="injectDecayScenario('billing_failure_downgrade')">
+            <i data-lucide="play"></i> Inject Billing Failure
+          </button>
+        </div>
+
+        <div class="sim-card">
+          <div class="sim-card-header">
+            <i data-lucide="message-square-warning" class="icon-danger"></i>
+            <h3>Consecutive Negative Zendesk Tickets</h3>
+          </div>
+          <p>Injects negative sentiment NLP support tickets. Evaluates Tier 3 SLA override triggers.</p>
+          <button class="btn btn-outline-danger" onclick="injectDecayScenario('consecutive_negative_tickets')">
+            <i data-lucide="play"></i> Inject Negative Tickets
+          </button>
+        </div>
+
+        <div class="sim-card">
+          <div class="sim-card-header">
+            <i data-lucide="mouse-pointer-click" class="icon-info"></i>
+            <h3>Core Sticky Feature Abandonment</h3>
+          </div>
+          <p>Simulates drop-off in primary sticky workflow usage to under 20%. Evaluates Pendo guided-tour trigger.</p>
+          <button class="btn btn-outline-info" onclick="injectDecayScenario('core_feature_abandonment')">
+            <i data-lucide="play"></i> Abandon Core Feature
+          </button>
+        </div>
+
+        <div class="sim-card sim-card-success">
+          <div class="sim-card-header">
+            <i data-lucide="sparkles" class="icon-green"></i>
+            <h3>Closed-Loop Retention Success</h3>
+          </div>
+          <p>Simulates positive customer acceptance of outreach (e.g. promo redeemed, CSM pairing completed). Re-anchors telemetry.</p>
+          <button class="btn btn-success" onclick="injectDecayScenario('intervention_success_rebound')">
+            <i data-lucide="check-circle"></i> Simulate Retention Recovery
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: DISPATCH LOG -->
+    <section id="view-dispatches" class="view-section">
+      <div class="dispatch-header">
+        <h2><i data-lucide="send"></i> Live Omnichannel Dispatch Stream</h2>
+        <p>Real-time audit log of automated and manual retention workflows dispatched across Salesforce, Pendo, SendGrid, Twilio, and Zendesk.</p>
+      </div>
+
+      <div class="dispatch-table-container">
+        <table class="anchor-table" id="dispatches-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Channel & Target</th>
+              <th>Account & Action Taken</th>
+              <th>Deployment Mode</th>
+              <th>Status</th>
+              <th>Payload Details</th>
+            </tr>
+          </thead>
+          <tbody id="dispatches-table-body">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 4: PROOF OF VALUE & ROI -->
+    <section id="view-roi" class="view-section">
+      <div class="roi-container">
+        <div class="roi-inputs-panel">
+          <h2><i data-lucide="calculator"></i> Proof of Value & ROI Model (Slide 7)</h2>
+          <p>Simulate financial returns and ARR preservation for your organization based on Anchor's predictive intervention engine.</p>
+          
+          <div class="roi-control-group">
+            <label>Active Enterprise Customers: <span class="val-badge" id="val-customers">250</span></label>
+            <input type="range" id="input-customers" min="20" max="2000" step="10" value="250" oninput="calculateROI()">
+          </div>
+
+          <div class="roi-control-group">
+            <label>Average ARR per Account ($): <span class="val-badge" id="val-avg-arr">$24,000</span></label>
+            <input type="range" id="input-avg-arr" min="2000" max="100000" step="1000" value="24000" oninput="calculateROI()">
+          </div>
+
+          <div class="roi-control-group">
+            <label>Baseline Annual Gross Churn (%): <span class="val-badge" id="val-churn-pct">12.0%</span></label>
+            <input type="range" id="input-churn-pct" min="3.0" max="30.0" step="0.5" value="12.0" oninput="calculateROI()">
+          </div>
+
+          <div class="roi-control-group">
+            <label>Anchor Retention Lift (% Churn Prevented): <span class="val-badge" id="val-lift-pct">25.0%</span></label>
+            <input type="range" id="input-lift-pct" min="5.0" max="50.0" step="1.0" value="25.0" oninput="calculateROI()">
+          </div>
+        </div>
+
+        <div class="roi-results-panel">
+          <h3>Projected Value Realization</h3>
+          <div class="roi-stat-grid">
+            <div class="roi-stat-box highlight-box">
+              <span class="stat-label">Projected Annual ARR Saved</span>
+              <span class="stat-big-val text-green" id="roi-arr-saved">$180,000</span>
+              <span class="stat-hint">Preserved recurrent revenue</span>
+            </div>
+            <div class="roi-stat-box">
+              <span class="stat-label">Net ROI Multiple</span>
+              <span class="stat-big-val text-blue" id="roi-multiple">4.0x</span>
+              <span class="stat-hint">vs platform investment</span>
+            </div>
+            <div class="roi-stat-box">
+              <span class="stat-label">Payback Period</span>
+              <span class="stat-big-val text-purple" id="roi-payback">3.0 months</span>
+              <span class="stat-hint">Time to break-even</span>
+            </div>
+            <div class="roi-stat-box">
+              <span class="stat-label">Prevented Account Losses</span>
+              <span class="stat-big-val text-amber" id="roi-accounts-saved">7.5 accounts/yr</span>
+              <span class="stat-hint">Retained logos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ACCOUNT DETAIL / RETENTION INSPECTOR MODAL -->
+  <div class="modal-backdrop" id="account-modal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <div class="modal-avatar" id="modal-avatar">AG</div>
+          <div>
+            <div class="modal-title-row">
+              <h2 id="modal-account-name">Apex Global Cloud</h2>
+              <span class="badge" id="modal-tier-badge">Enterprise VIP</span>
+              <span class="badge badge-critical" id="modal-risk-badge">Critical Risk</span>
+              <span class="badge badge-neutral" id="modal-cluster-badge">Executive Drift</span>
+            </div>
+            <p class="modal-subtitle" id="modal-domain-csm">apexcloud.io &bull; CSM: Sarah Jenkins &bull; ARR: $294,000</p>
+          </div>
+        </div>
+        <button class="close-btn" onclick="closeModal()"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- TOP GAUGES ROW -->
+        <div class="inspector-summary-row">
+          <div class="gauge-card">
+            <span class="inspector-section-title">Dynamic Churn Propensity</span>
+            <div class="gauge-display">
+              <div class="gauge-number" id="modal-risk-score">84.2</div>
+              <div class="gauge-scale">/ 100</div>
+            </div>
+            <div class="gauge-bar-track">
+              <div class="gauge-bar-fill" id="modal-risk-bar" style="width: 84.2%;"></div>
+            </div>
+            <span class="gauge-desc" id="modal-risk-explanation">Severe Risk: Immediate multi-channel intervention required</span>
+          </div>
+
+          <div class="gauge-card">
+            <span class="inspector-section-title">Survival Analysis (TTC)</span>
+            <div class="gauge-display">
+              <div class="gauge-number text-amber" id="modal-ttc-days">24</div>
+              <div class="gauge-scale">Days</div>
+            </div>
+            <div class="ttc-indicator">
+              <i data-lucide="clock"></i> Estimated Silent Drift Horizon
+            </div>
+            <span class="gauge-desc">Parametric Weibull decay modeling estimates 50% attrition threshold in ~24 days.</span>
+          </div>
+
+          <div class="gauge-card nba-highlight-card">
+            <span class="inspector-section-title"><i data-lucide="sparkles"></i> Next-Best-Action (NBA)</span>
+            <div class="nba-channel-tag" id="modal-nba-channel">RM / CSM Call</div>
+            <div class="nba-title" id="modal-nba-title">High-Priority Salesforce Task & CSM Briefing</div>
+            <p class="nba-desc" id="modal-nba-desc">Auto-generates P0 Salesforce task, routes SHAP explainability insights to CSM, and pauses automated upsell marketing.</p>
+            <div class="nba-actions-row">
+              <button class="btn btn-primary btn-sm" id="modal-dispatch-btn" onclick="dispatchCurrentNba()">
+                <i data-lucide="send"></i> Dispatch Workflow Now
+              </button>
+              <button class="btn btn-outline-success btn-sm" onclick="triggerClosedLoopSuccess()">
+                <i data-lucide="check-circle-2"></i> Retained (Feedback)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHARTS ROW: SHAP & SURVIVAL -->
+        <div class="inspector-charts-row">
+          <!-- SHAP Feature Attribution -->
+          <div class="chart-panel">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <i data-lucide="bar-chart-3" class="icon-blue"></i>
+                <h3>SHAP Feature Attribution (Why At Risk)</h3>
+              </div>
+              <span class="panel-tag">TreeSHAP Calibrated</span>
+            </div>
+            <p class="panel-help">Positive impact (red/amber) increases churn risk; negative impact (green) preserves retention.</p>
+            <div class="chart-canvas-wrap">
+              <canvas id="shapChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Survival Probability Curve -->
+          <div class="chart-panel">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <i data-lucide="trending-down" class="icon-purple"></i>
+                <h3>90-Day Survival Probability Curve S(t)</h3>
+              </div>
+              <span class="panel-tag">Weibull Hazard Model</span>
+            </div>
+            <p class="panel-help">Estimates the probability that the account will remain active over the next 90 days.</p>
+            <div class="chart-canvas-wrap">
+              <canvas id="survivalChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- TELEMETRY TIMELINE & CONTEXTUAL TICKETS -->
+        <div class="inspector-bottom-row">
+          <!-- 90-day Behavioral Decay Chart -->
+          <div class="chart-panel flex-2">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <i data-lucide="line-chart" class="icon-blue"></i>
+                <h3>60-90 Day Behavioral Decay & Silent Drift Telemetry</h3>
+              </div>
+            </div>
+            <div class="chart-canvas-wrap">
+              <canvas id="telemetryChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Contextual Support NLP & Signals -->
+          <div class="chart-panel flex-1">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <i data-lucide="message-square" class="icon-amber"></i>
+                <h3>Contextual NLP Ticket Sentiment</h3>
+              </div>
+              <span class="badge" id="modal-nlp-badge">Neutral</span>
+            </div>
+            <div class="ticket-snippets-list" id="modal-ticket-snippets">
+              <!-- Ticket snippets populated via JS -->
+            </div>
+
+            <div class="payload-preview-box">
+              <div class="payload-title"><i data-lucide="code"></i> Orchestration Payload Context:</div>
+              <pre id="modal-payload-json">{}</pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- APP JAVASCRIPT -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
